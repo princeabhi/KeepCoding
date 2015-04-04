@@ -1,0 +1,63 @@
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.net.util.SubnetUtils;
+
+public class FileWrite {
+
+
+        @SuppressWarnings("null")
+        public static void main(String args[]) throws IOException {
+                String continent = null,country = null;
+                String[] allIps = null;
+                //String[] alllocs;
+                SubnetUtils utils;
+                String[] ipv4add = null;
+                //String[] loc;
+                BufferedReader ipv4data = new BufferedReader(new FileReader("/home/hduser/data/GeoLite2-City-CSV_20150303/GeoLite2-City-Blocks-IPv4.csv"));
+                RandomAccessFile locdata = new RandomAccessFile (new File("/home/hduser/data/GeoLite2-City-CSV_20150303/GeoLite2-City-Locations-en.csv"),"rw");                
+                BufferedWriter writedata = new BufferedWriter(new FileWriter("/home1/hduser/data/GeoLite2-City-CSV_20150303/iplocator_data"));
+                String ipv4line = ipv4data.readLine();
+                ipv4line = ipv4data.readLine();
+                String locline = locdata.readLine();
+                String temp;
+                int i;
+                String[] temp1;
+                Map<String,List<String>> map = new HashMap<String,List<String>>();
+                List<String> liststr;
+                while ((locline = locdata.readLine()) != null) {
+                        temp1 = locline.split(",");
+                        liststr = new ArrayList<String>();
+                        //System.out.println("locline:"+temp1[0]+"/"+temp1[3]+"/"+temp1[5]);
+                        //System.out.println(ipv4add[1]+" "+temp1[3]+" "+temp1[5]);
+                        liststr.add(temp1[3]);
+                        liststr.add(temp1[5]);
+                        map.put(temp1[0], liststr);
+                }
+                while (ipv4line != null) {
+                        ipv4add = ipv4line.split(",");
+                        temp=ipv4add[0];
+                        utils = new SubnetUtils(temp);
+                        allIps = utils.getInfo().getAllAddresses();
+                        for (i=0;i<allIps.length;i++){
+                                writedata.write(allIps[i]+","+ipv4add[1]);
+                                //This way we can get the individual values from map.
+                                //map.get(ipv4add[1]).get(0)+","+map.get(ipv4add[1]).get(1));
+                                writedata.newLine();
+                        }
+                        ipv4line=ipv4data.readLine();
+                }
+                ipv4data.close();
+                writedata.close();
+                locdata.close();
+        }
+}
